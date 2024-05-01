@@ -1,40 +1,55 @@
 import os
 import time
-import random
+from datetime import datetime
 from utils.constants import REPO_LOCAL_PATH
 from zthreading.tasks import Task
+from utils.logs import create_logger
+
+logger = create_logger("basic")
+
+global logical_clock
+logical_clock = 0
+byte_data = ("abcd" * 10).encode("utf-8")
+fpath = os.path.join(REPO_LOCAL_PATH, "test_writer.dump")
+sep = " ".encode("utf-8")
+lnend = "\n".encode("utf-8")
 
 
 def test_writer():
-    logical_clock = 0
-    sep = " ".encode("utf-8")
-    lnend = "\n".encode("utf-8")
+    global logical_clock
+
     with open(
-        os.path.join(REPO_LOCAL_PATH, "test_writer.dump"),
+        fpath,
         mode="ab",
-        buffering=10000,
+        buffering=10000000,
     ) as src:
         while True:
             logical_clock += 1
-            src.write(bytes(logical_clock))
-            src.write(sep)
-            src.write(str(random.random()).encode(encoding="utf-8"))
+            src.write(byte_data)
             src.write(lnend)
-            if logical_clock == 1e10:
-                break
-
-
-def test_halter():
-    time.sleep(2)
-    exit(0)
+            if logical_clock % 1e5 == 0:
+                logger.info(logical_clock)
+                src.flush()
+            if logical_clock == 1e8:
+                logger.info("Reached end")
 
 
 if __name__ == "__main__":
+    if os.path.exists(fpath):
+        os.remove(fpath)
 
+    started = datetime.now()
     tasks = [
         Task(test_writer).start(),
-        Task(test_halter).start(),
     ]
 
-    for t in tasks:
-        t.join()
+    time.sleep(10)
+    ended = datetime.now()
+
+    delta = ended - started
+    logger.info(
+        f"timed out @ {logical_clock} in {delta.total_seconds()}"
+        + f" with {logical_clock/delta.total_seconds()} a/s"
+    )
+    os.kill(os.getpid(), 9)
+    exit(0)

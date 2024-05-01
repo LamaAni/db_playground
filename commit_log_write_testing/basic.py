@@ -9,7 +9,7 @@ logger = create_logger("basic")
 
 global logical_clock
 logical_clock = 0
-byte_data = ("abcd" * 10).encode("utf-8")
+byte_data = ("abcd" * 100).encode("utf-8")
 fpath = os.path.join(REPO_LOCAL_PATH, "test_writer.dump")
 sep = " ".encode("utf-8")
 lnend = "\n".encode("utf-8")
@@ -23,6 +23,8 @@ def test_writer():
         mode="ab",
         buffering=10000000,
     ) as src:
+        # 2 m actions per second. This would be much more then
+        # the number of requests available.
         while True:
             logical_clock += 1
             src.write(byte_data)

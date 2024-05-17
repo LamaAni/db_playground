@@ -218,3 +218,10 @@ flowchart TD
 1. Check the last log clock entry for each of the log "names"
 1. Load the log lines tha need replaying.
 1. Replay the log lines, and resume normal operation.
+
+### Using the python dataclass or other serialization frameworks
+
+In general, the python dataclass can be used, other frameworks as well. That said,
+in its purest implementation we will not add these optimizations since we are not sure
+what form the data serialization would take. So, we will use a "special" serializer that
+will allow us to overload the serialization in the future and provide more optimizations.

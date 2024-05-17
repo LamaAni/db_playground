@@ -1,0 +1,2 @@
+class CommitLogException(Exception):
+    pass
